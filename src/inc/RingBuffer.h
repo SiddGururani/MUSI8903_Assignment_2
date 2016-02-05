@@ -94,11 +94,11 @@ public:
         get(ptBuff, iLength);
         incIdx(m_iReadIdx, iLength);
     }
-
+    
     /*! return the value at the current read index
-    \param int iOffset: read at offset from read index
-    \return float the value from the read index
-    */
+     \param int iOffset: read at offset from read index
+     \return float the value from the read index
+     */
     T get (int iOffset = 0) const
     {
         int iRead = m_iReadIdx + iOffset;
@@ -109,7 +109,17 @@ public:
         
         return m_ptBuff[iRead];
     }
-
+    
+    /*! returns the linearly interpolated data if the index input is a floating point
+    \param double dIndex: reads data at dIndex
+    */
+    T get(double dIndex) const
+    {
+        int integralPart = std::floor(dIndex);
+        double fractionalPart = dIndex - integralPart;
+        return get(integralPart)*(1-fractionalPart) + get(integralPart+1)*fractionalPart;
+    }
+    
     /*! return the values starting at the current read index
     \param T * ptBuffpointer to where the values will be written
     \param int iLength: number of values
@@ -199,7 +209,7 @@ private:
         }
         iIdx    = (iIdx + iOffset) % m_iBuffLength;
     };
-
+    
     int m_iBuffLength,              //!< length of the internal buffer
         m_iReadIdx,                 //!< current read index
         m_iWriteIdx;                //!< current write index
