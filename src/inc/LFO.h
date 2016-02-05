@@ -6,8 +6,8 @@
 //
 //
 
-#ifndef LFO
-#define LFO
+#ifndef LFO_h
+#define LFO_h
 
 #include <cassert>
 #include <algorithm>
@@ -21,6 +21,14 @@ class LFO
 {
 public:
     
+    LFO(float mod_freq)
+    {
+        _mod_freq = mod_freq;
+    }
+    ~LFO()
+    {
+        _mod_freq = 0;
+    }
     /* returns the LFO output at a given time in seconds
     float time: time in seconds
     */
@@ -29,10 +37,14 @@ public:
         return sin(2*PI*_mod_freq*time);
     }
     
+    void setOscFreq(float mod_freq)
+    {
+        _mod_freq = mod_freq;
+    }
 private:
     float _mod_freq;
 };
 
 
 
-#endif /* LFO */
+#endif /* LFO_h */
