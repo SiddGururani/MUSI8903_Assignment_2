@@ -28,10 +28,10 @@ public:
     static const int  getVersion (const Version_t eVersionIdx);
     static const char* getBuildDate ();
     
-    static Error_t create (Vibrato*& pCKortIf,float mod_freq, int delay_width);
+    static Error_t create (Vibrato*& pCKortIf,float mod_freq, int delay_width, int mod_amp);
     static Error_t destroy (Vibrato*& pCKortIf);
     
-    Error_t init (float mod_freq, int delay_width);
+    Error_t init (float mod_freq, int delay_width, int mod_amp);
     Error_t reset ();
     
     Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
@@ -44,6 +44,7 @@ private:
     LFO* _sin_osc;
     float _mod_freq;
     int _delay_width;
+    int _mod_amp;
 };
 
 

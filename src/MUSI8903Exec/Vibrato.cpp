@@ -54,16 +54,14 @@ const char*  Vibrato::getBuildDate ()
     return kVibratoBuildDate;
 }
 
-Error_t Vibrato::create (Vibrato*& pVibrato, float mod_freq, int delay_width)
+Error_t Vibrato::create (Vibrato*& pVibrato, float mod_freq, int delay_width, int mod_amp)
 {
     pVibrato = new Vibrato ();
     
     if (!pVibrato)
         return kUnknownError;
-    pVibrato->_mod_freq = mod_freq;
-    pVibrato->_delay_width = delay_width;
-    pVibrato->_ring_delay_line = new CRingBuffer<float>(2*delay_width+1);
-    pVibrato->_sin_osc = new LFO(mod_freq);
+
+    pVibrato->init(mod_freq, delay_width, mod_amp);
     return kNoError;
 }
 
@@ -82,13 +80,18 @@ Error_t Vibrato::destroy (Vibrato*& pVibrato)
     return kNoError;
 }
 
-Error_t Vibrato::init(float mod_freq, int delay_width)
+Error_t Vibrato::init(float mod_freq, int delay_width, int mod_amp)
 {
-    // allocate memory
+    reset();
     
-    // initialize variables and buffers
+    // check for parameters
+    if (mod_amp > delay_width)
+        return kFunctionInvalidArgsError;
+        
+    // initialise parameters and allocate memory
     _mod_freq = mod_freq;
     _delay_width = delay_width;
+    _mod_amp = mod_amp;
     _ring_delay_line = new CRingBuffer<float>(2*delay_width+1);
     _sin_osc = new LFO(mod_freq);
     
@@ -102,5 +105,9 @@ Error_t Vibrato::reset ()
     _delay_width = 0;
     _sin_osc->setOscFreq(0);
     _ring_delay_line->reset();
+    return kNoError;
+}
+Error_t Vibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
+{
     return kNoError;
 }
