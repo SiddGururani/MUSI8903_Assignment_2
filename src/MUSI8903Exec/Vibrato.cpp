@@ -25,6 +25,7 @@ Vibrato::Vibrato (int max_delay_width, int num_channels)
     for (int i = 0; i < _num_channels; i++) {
         _ring_delay_line[i] = new CRingBuffer<float>(_max_delay_width);
     }
+    reset();
 }
 
 
@@ -65,6 +66,7 @@ Error_t Vibrato::create (Vibrato*& pVibrato, float max_delay_width_sec, long int
     pVibrato->convertTimeToSamples(max_delay_width_sec, pVibrato->_max_delay_width);
     pVibrato->_num_channels = num_channels;
     pVibrato->_sample_rate = sample_rate;
+    pVibrato->_num_samples_processed = 0;
     pVibrato = new Vibrato (pVibrato->_max_delay_width, num_channels);
     
     if (!pVibrato)
@@ -91,7 +93,7 @@ Error_t Vibrato::destroy (Vibrato*& pVibrato)
     return kNoError;
 }
 
-Error_t Vibrato::init(float mod_freq, int delay_width_secs, int mod_amp_secs)
+Error_t Vibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs)
 {
     reset();
     
@@ -102,14 +104,17 @@ Error_t Vibrato::init(float mod_freq, int delay_width_secs, int mod_amp_secs)
     _sin_osc = new LFO(mod_freq);
     
     // check parameter validity
+    if (_mod_amp < 0 || _delay_width < 0)
+        return kFunctionInvalidArgsError;
+    
     if (_mod_amp > _delay_width)
         return kFunctionInvalidArgsError;
     
-    if (2*_delay_width+1 > _max_delay_width)
+    if (_delay_width + _mod_amp > _max_delay_width)
         return kFunctionInvalidArgsError;
 
     // set ring buffer write index
-    int delay_length = _delay_width + _mod_amp + 1;
+    int delay_length = _delay_width + _mod_amp;
     for (int i = 0; i < _num_channels; i++) {
         
         _ring_delay_line[i]->setWriteIdx(_ring_delay_line[i]->getReadIdx() + delay_length);
@@ -124,15 +129,11 @@ Error_t Vibrato::reset ()
     _mod_freq = 0.F;
     _delay_width = 0;
     _mod_amp = 0;
+    _num_samples_processed = 0;
     _sin_osc->setOscFreq(0);
     for (int i = 0; i < _num_channels; i++) {
         _ring_delay_line[i]->reset();
     }
-    return kNoError;
-}
-Error_t Vibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
-{
-    
     return kNoError;
 }
 
@@ -141,3 +142,114 @@ Error_t Vibrato::convertTimeToSamples(int paramValue, int& param)
     param = paramValue*_sample_rate;
     return kNoError;
 }
+
+Error_t Vibrato::setDelayWidth(float delay_width_secs)
+{
+    int temp = 0;
+    convertTimeToSamples(delay_width_secs, temp);
+    if (temp < _mod_amp || temp + _mod_amp > _max_delay_width)
+        return kFunctionInvalidArgsError;
+    
+    int num_additional_taps  = temp - _delay_width;
+    if (num_additional_taps < 0)
+    {
+        for (int i = 0; i < _num_channels; i++)
+        {
+           _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx());
+        }
+    }
+    else
+    {
+        
+        for (int i = 0; i < _num_channels; i++)
+        {
+            for (int j = 0; j < num_additional_taps; j++)
+            {
+                _ring_delay_line[i]->putPostInc(0.F);
+            }
+        }
+    }
+    
+    _delay_width = temp;
+    return kNoError;
+}
+
+Error_t Vibrato::setModAmp(float delay_width_secs)
+{
+    int temp = 0;
+    convertTimeToSamples(delay_width_secs, temp);
+    if (temp > _delay_width || temp < 0)
+        return kFunctionInvalidArgsError;
+    
+    int num_additional_taps  = temp - _mod_amp;
+    if (num_additional_taps < 0)
+    {
+        for (int i = 0; i < _num_channels; i++)
+        {
+            _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx());
+        }
+    }
+    else
+    {
+        
+        for (int i = 0; i < _num_channels; i++)
+        {
+            for (int j = 0; j < num_additional_taps; j++)
+            {
+                _ring_delay_line[i]->putPostInc(0.F);
+            }
+        }
+    }
+    
+    _mod_amp = temp;
+    return kNoError;
+}
+
+Error_t Vibrato::setModFreq(float mod_freq)
+{
+    if (mod_freq < 0)
+        return kFunctionInvalidArgsError;
+    _mod_freq = mod_freq;
+    _sin_osc->setOscFreq(_mod_freq);
+    return kNoError;
+}
+
+Error_t Vibrato::getDelayWidth(int &delay_width)
+{
+    delay_width = _delay_width;
+    return kNoError;
+}
+
+Error_t Vibrato::getModAmp(int &mod_amp)
+{
+    mod_amp = _mod_amp;
+    return kNoError;
+}
+
+Error_t Vibrato::getModFreq(float &mod_freq)
+{
+    mod_freq = _mod_freq;
+    return kNoError;
+}
+
+Error_t Vibrato::process (float **input_buffer, float **output_buffer, int number_of_frames)
+{
+    float temp = 0;
+    double tap = 0;
+    
+    for (int data_id = 0; data_id < number_of_frames; data_id++)
+    {
+        for (int channel_id = 0; channel_id < _num_channels; channel_id++)
+        {
+            _ring_delay_line[channel_id]->putPostInc(input_buffer[channel_id][data_id]);
+            temp = _ring_delay_line[channel_id]->getPostInc();
+            float time = _num_samples_processed/static_cast<float>(_sample_rate);
+            tap  = _delay_width + _mod_amp * _sin_osc->getOscOutput(time);
+            tap = _ring_delay_line[channel_id]->getWriteIdx() - tap;
+            output_buffer[channel_id][data_id] = _ring_delay_line[channel_id]->get(tap);
+        }
+        _num_samples_processed++;
+    }
+    return kNoError;
+}
+

@@ -30,12 +30,23 @@ public:
     static Error_t create (Vibrato*& pCKortIf, float max_delay_width_sec, long int sample_rate, int num_channels);
     static Error_t destroy (Vibrato*& pCKortIf);
     
-    Error_t init (float mod_freq, int delay_width, int mod_amp);
+    //initialisation and reset functions
+    Error_t init (float mod_freq, float delay_width_secs, float mod_amp_secs);
     Error_t reset ();
-    Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
+    
+    
+    //set parameter functions
     Error_t setDelayWidth(float delay_width_secs);
     Error_t setModAmp(float mod_amp_secs);
     Error_t setModFreq(float mod_freq);
+    
+    //get parameter functions
+    Error_t getDelayWidth(int& delay_width);
+    Error_t getModAmp(int& mod_amp);
+    Error_t getModFreq(float& mod_freq);
+    
+    //process function
+    Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
     
 private:
     Vibrato (int max_delay, int num_channels);
@@ -49,8 +60,8 @@ private:
     int _mod_amp;
     long int _sample_rate;
     int _num_channels;
+    long long int _num_samples_processed;
    
-    
     Error_t convertTimeToSamples(int paramValue, int& param);
 };
 
