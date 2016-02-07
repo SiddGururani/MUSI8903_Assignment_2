@@ -3,11 +3,14 @@
 #ifdef WITH_TESTS
 #include <cassert>
 #include <cstdio>
+#include <iostream>
 
 #include "UnitTest++.h"
 #include "Synthesis.h"
 #include "Vector.h"
 #include "Vibrato.h"
+
+using namespace std;
 
 SUITE(Vibrato_Test)
 {
@@ -22,9 +25,9 @@ SUITE(Vibrato_Test)
 			blockLength(171),
 			numChannels(3),
 			sampleRate(8000),
-			delay_width(.02F),
-            mod_freq(10.F),
-			mod_amp(.01F)
+			delay_width(.002F),
+            mod_freq(13.F),
+			mod_amp(.002F)
 			
 		{
 			Vibrato::create(pVibrato, maxDelayLength, sampleRate, numChannels);
@@ -103,9 +106,9 @@ SUITE(Vibrato_Test)
 
 		for (int i = 0; i < numChannels; i++)
 		{
-			for (int j = delay_width*sampleRate+1; j < dataLength; j++)
+			for (int j = delay_width*sampleRate; j < dataLength; j++)
 			{
-				CHECK_CLOSE(inputData[i][j], outputData[i][j], 1e-3F);
+				CHECK_CLOSE(inputData[i][j-(int)(delay_width*sampleRate)], outputData[i][j], 1e-3F);
 			}
 		}
 
@@ -116,17 +119,21 @@ SUITE(Vibrato_Test)
 		pVibrato->init(mod_freq, delay_width, mod_amp);
 
 		//Generate DC input
+        float dc_value = 0.5;
 		for (int i = 0; i < numChannels; i++)
 		{
 			for (int j = 0; j < dataLength; j++)
-				inputData[i][j] = 0.5;
+				inputData[i][j] = dc_value;
 		}
 
 		TestProcess();
 
 		for (int i=0; i < numChannels; i++)
 		{
-			CHECK_ARRAY_CLOSE(inputData[i], outputData[i], dataLength, 1e-3);
+            for (int j = (delay_width + mod_amp)*sampleRate; j < dataLength; j++) {
+                CHECK_EQUAL(dc_value, outputData[i][j]);
+            }
+			
 		}
 	}
 
@@ -141,6 +148,7 @@ SUITE(Vibrato_Test)
 
 		TestProcess();
 
+        pVibrato->init(mod_freq, delay_width, mod_amp);
 		outputData2 = new float*[numChannels];
 		for (int i = 0; i < numChannels; i++)
 		{
@@ -163,7 +171,10 @@ SUITE(Vibrato_Test)
 		}
 		for (int i=0; i < numChannels; i++)
 		{
-			CHECK_ARRAY_CLOSE(outputData[i], outputData2[i], dataLength, 1e-3);
+            for (int j = 0; j < dataLength; j++)
+            {
+                CHECK_CLOSE(outputData2[i][j], outputData[i][j], 1e-3F);
+            }
 		}
 	}
 }

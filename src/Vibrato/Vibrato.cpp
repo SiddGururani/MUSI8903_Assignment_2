@@ -7,6 +7,7 @@
 //
 
 // standard headers
+#include <iostream>
 
 #include "MUSI8903Config.h"
 
@@ -15,6 +16,8 @@
 #include "Ringbuffer.h"
 
 #include "Vibrato.h"
+
+using namespace std;
 
 static const char*  kVibratoBuildDate             = __DATE__;
 
@@ -116,7 +119,7 @@ Error_t Vibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs
     int delay_length = _delay_width + _mod_amp;
     for (int i = 0; i < _num_channels; i++) {
         
-        _ring_delay_line[i]->setWriteIdx(_ring_delay_line[i]->getReadIdx() + delay_length);
+        _ring_delay_line[i]->setWriteIdx(_ring_delay_line[i]->getReadIdx() + delay_length + 1);
     }
     
     return kNoError;
@@ -154,7 +157,7 @@ Error_t Vibrato::setDelayWidth(float delay_width_secs)
     {
         for (int i = 0; i < _num_channels; i++)
         {
-           _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx());
+           _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx() + 1);
         }
     }
     else
@@ -185,7 +188,7 @@ Error_t Vibrato::setModAmp(float delay_width_secs)
     {
         for (int i = 0; i < _num_channels; i++)
         {
-            _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx());
+            _ring_delay_line[i]->setWriteIdx(temp + _mod_amp + _ring_delay_line[i]->getReadIdx() + 1);
         }
     }
     else
@@ -241,11 +244,14 @@ Error_t Vibrato::process (float **input_buffer, float **output_buffer, int numbe
         for (int channel_id = 0; channel_id < _num_channels; channel_id++)
         {
             _ring_delay_line[channel_id]->putPostInc(input_buffer[channel_id][data_id]);
+            //cout << "Write Index: " << _ring_delay_line[channel_id]->getWriteIdx() << endl;
             temp = _ring_delay_line[channel_id]->getPostInc();
+            //cout << "Read Index: " << _ring_delay_line[channel_id]->getReadIdx() << endl;
             float time = _num_samples_processed/static_cast<float>(_sample_rate);
-            tap  = _delay_width + _mod_amp * _sin_osc->getOscOutput(time);
-            tap = _ring_delay_line[channel_id]->getWriteIdx() - tap;
+            tap  = 1 + _delay_width + _mod_amp * _sin_osc->getOscOutput(time);
+            tap = _ring_delay_line[channel_id]->getWriteIdx() - tap - _ring_delay_line[channel_id]->getReadIdx();
             output_buffer[channel_id][data_id] = _ring_delay_line[channel_id]->get(tap);
+            //cout << input_buffer[channel_id][data_id] << " " << output_buffer[channel_id][data_id]<< endl;
         }
         _num_samples_processed++;
     }
