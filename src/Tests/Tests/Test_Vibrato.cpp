@@ -176,6 +176,12 @@ SUITE(Vibrato_Test)
                 CHECK_CLOSE(outputData2[i][j], outputData[i][j], 1e-3F);
             }
 		}
+        
+        for (int i = 0;i < numChannels; i++)
+        {
+            delete[] outputData2[i];
+        }
+        delete[] outputData2;
 	}
 }
 
