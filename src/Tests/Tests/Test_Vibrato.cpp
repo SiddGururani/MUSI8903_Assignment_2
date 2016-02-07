@@ -5,12 +5,11 @@
 #include <cstdio>
 
 #include "UnitTest++.h"
-
 #include "Synthesis.h"
 #include "Vector.h"
 #include "Vibrato.h"
 
-SUITE(Vibrato)
+SUITE(Vibrato_Test)
 {
 	struct VibratoData
 	{
@@ -23,9 +22,10 @@ SUITE(Vibrato)
 			blockLength(171),
 			numChannels(3),
 			sampleRate(8000),
-			delay_width(.1F),
-			mod_amp(.05F),
-			mod_freq(100.F)
+			delay_width(.02F),
+            mod_freq(10.F),
+			mod_amp(.01F)
+			
 		{
 			Vibrato::create(pVibrato, maxDelayLength, sampleRate, numChannels);
 			
@@ -48,8 +48,8 @@ SUITE(Vibrato)
 			{
 				delete[] inputData[i];
 				delete[] outputData[i];
-				delete[] inputTmp[i];
-				delete[] outputTmp[i];
+				//delete[] inputTmp[i];
+				//delete[] outputTmp[i];
 			}
 			delete[] inputData;
 			delete[] outputData;
@@ -75,11 +75,11 @@ SUITE(Vibrato)
 			}
 		}
 
-		Vibrato  *pVibrato;
-		float       **inputData,
-			**outputData,
-			**inputTmp,
-			**outputTmp;
+		Vibrato *pVibrato;
+		float   **inputData,
+                **outputData,
+                **inputTmp,
+                **outputTmp;
 		int     dataLength;
 		float   maxDelayLength;
 		int     blockLength;
@@ -87,7 +87,7 @@ SUITE(Vibrato)
 		float   sampleRate;
 		float   delay_width,
 				mod_freq,
-			mod_amp;
+                mod_amp;
 	};
 
 	TEST_FIXTURE(VibratoData, zero_mod_amp)
@@ -103,7 +103,7 @@ SUITE(Vibrato)
 
 		for (int i = 0; i < numChannels; i++)
 		{
-			for (int j = delay_width + 1; j < dataLength; j++)
+			for (int j = delay_width*sampleRate+1; j < dataLength; j++)
 			{
 				CHECK_CLOSE(inputData[i][j], outputData[i][j], 1e-3F);
 			}

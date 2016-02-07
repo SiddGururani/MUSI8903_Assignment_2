@@ -5,7 +5,6 @@
 #include <cstdio>
 
 #include "UnitTest++.h"
-
 #include "Synthesis.h"
 #include "Vector.h"
 #include "CombFilterIf.h"

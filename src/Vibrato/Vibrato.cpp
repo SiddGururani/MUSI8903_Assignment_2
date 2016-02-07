@@ -19,9 +19,15 @@
 static const char*  kVibratoBuildDate             = __DATE__;
 
 
-Vibrato::Vibrato (int max_delay_width, int num_channels)
+Vibrato::Vibrato (float max_delay_width_secs, int num_channels, long int sample_rate)
 {
+    _sample_rate = sample_rate;
+    _num_channels = num_channels;
+    _num_samples_processed = 0;
+    convertTimeToSamples(max_delay_width_secs, _max_delay_width);
+     _sin_osc = new LFO(0.F);
     _ring_delay_line = new CRingBuffer<float>*[num_channels];
+    
     for (int i = 0; i < _num_channels; i++) {
         _ring_delay_line[i] = new CRingBuffer<float>(_max_delay_width);
     }
@@ -29,10 +35,7 @@ Vibrato::Vibrato (int max_delay_width, int num_channels)
 }
 
 
-Vibrato::~Vibrato ()
-{
-    this->reset ();
-}
+Vibrato::~Vibrato () {}
 
 const int  Vibrato::getVersion (const Version_t eVersionIdx)
 {
@@ -63,11 +66,7 @@ const char*  Vibrato::getBuildDate ()
 
 Error_t Vibrato::create (Vibrato*& pVibrato, float max_delay_width_sec, long int sample_rate, int num_channels)
 {
-    pVibrato->convertTimeToSamples(max_delay_width_sec, pVibrato->_max_delay_width);
-    pVibrato->_num_channels = num_channels;
-    pVibrato->_sample_rate = sample_rate;
-    pVibrato->_num_samples_processed = 0;
-    pVibrato = new Vibrato (pVibrato->_max_delay_width, num_channels);
+    pVibrato = new Vibrato (max_delay_width_sec, num_channels, sample_rate);
     
     if (!pVibrato)
         return kUnknownError;
@@ -101,7 +100,7 @@ Error_t Vibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs
     _mod_freq = mod_freq;
     convertTimeToSamples(delay_width_secs, _delay_width);
     convertTimeToSamples(mod_amp_secs, _mod_amp);
-    _sin_osc = new LFO(mod_freq);
+    _sin_osc->setOscFreq(mod_freq);
     
     // check parameter validity
     if (_mod_amp < 0 || _delay_width < 0)
@@ -137,9 +136,9 @@ Error_t Vibrato::reset ()
     return kNoError;
 }
 
-Error_t Vibrato::convertTimeToSamples(int paramValue, int& param)
+Error_t Vibrato::convertTimeToSamples(float paramValue, int& param)
 {
-    param = paramValue*_sample_rate;
+    param = paramValue * _sample_rate;
     return kNoError;
 }
 
