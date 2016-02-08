@@ -111,7 +111,6 @@ SUITE(Vibrato_Test)
 				CHECK_CLOSE(inputData[i][j-(int)(delay_width*sampleRate)], outputData[i][j], 1e-3F);
 			}
 		}
-
 	}
 
 	TEST_FIXTURE(VibratoData, DC_input)
@@ -133,7 +132,6 @@ SUITE(Vibrato_Test)
             for (int j = (delay_width + mod_amp)*sampleRate; j < dataLength; j++) {
                 CHECK_EQUAL(dc_value, outputData[i][j]);
             }
-			
 		}
 	}
 
@@ -182,6 +180,47 @@ SUITE(Vibrato_Test)
             delete[] outputData2[i];
         }
         delete[] outputData2;
+	}
+
+	TEST_FIXTURE(VibratoData, zero_input)
+	{
+		pVibrato->init(mod_freq, delay_width, mod_amp);
+
+		//Generate zero input
+		for (int i = 0; i < numChannels; i++)
+		{
+			for (int j = 0; j < dataLength; j++)
+				inputData[i][j] = 0.F;
+		}
+
+		TestProcess();
+
+		for (int i = 0; i < numChannels; i++)
+		{
+			for (int j = (delay_width + mod_amp)*sampleRate; j < dataLength; j++) {
+				CHECK_EQUAL(0, outputData[i][j]);
+			}
+		}
+	}
+
+	TEST_FIXTURE(VibratoData, zero_mod_freq)
+	{
+		//Set modulation amplitude to 0
+		pVibrato->init(0.F, delay_width, mod_amp);
+
+		//Generate arbitrary sine wave
+		for (int c = 0; c < numChannels; c++)
+			CSynthesis::generateSine(inputData[c], 50, sampleRate, dataLength, .8F, static_cast<float>(c*M_PI_2));
+
+		TestProcess();
+
+		for (int i = 0; i < numChannels; i++)
+		{
+			for (int j = delay_width*sampleRate; j < dataLength; j++)
+			{
+				CHECK_CLOSE(inputData[i][j - (int)(delay_width*sampleRate)], outputData[i][j], 1e-3F);
+			}
+		}
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "MUSI8903Config.h"
 
 #include "AudioFileIf.h"
+#include "Vibrato.h"
 
 using std::cout;
 using std::endl;
@@ -16,32 +17,60 @@ void    showClInfo ();
 // main function
 int main(int argc, char* argv[])
 {
-    std::string             sInputFilePath,                 //!< file paths
-                            sOutputFilePath;
+	std::string             sInputFilePath,                 //!< file paths
+							sOutputFilePath,
+							sInput2TxtPath;
 
-    static const int        kBlockSize          = 1024;
+    static const int        kBlockSize				= 1024;
 
-    clock_t                 time                = 0;
+    clock_t                 time					= 0;
 
-    float                   **ppfAudioData      = 0;
+	float                   **ppfInputAudioData		= 0,
+							**ppfOutputAudioData	= 0,
+							mod_freq				= 0.F,
+							mod_amp_secs			= 0.F,
+							delay_width_secs		= 0.F,
+							max_delay_width_secs	= 0.F;
 
-    CAudioFileIf            *phAudioFile        = 0;
-    std::fstream            hOutputFile;
+    CAudioFileIf            *phAudioFile			= 0;
+	Vibrato					*vibrato				= 0;
+	Error_t					error_check;
+    std::ofstream           infile, outfile;
     CAudioFileIf::FileSpec_t stFileSpec;
 
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    if (argc < 2)
-    {
-        return -1;
-    }
-    else
-    {
-        sInputFilePath  = argv[1];
-        sOutputFilePath = sInputFilePath + ".txt";
-    }
+	try
+	{
+		switch (argc)
+		{
+		case 1: cout << "Too few arguments. Enter Filename." << endl;
+			exit(0);
+			break;
+		case 2: sInputFilePath = argv[1];
+			break;
+		case 3: sInputFilePath = argv[1];
+			mod_freq = stof(argv[2]);
+			break;
+		case 4: sInputFilePath = argv[1];
+			mod_freq = stof(argv[2]);
+			mod_amp_secs = stof(argv[3]);
+			break;
+		case 5: sInputFilePath = argv[1];
+			mod_freq = stof(argv[2]);
+			mod_amp_secs = stof(argv[3]);
+			delay_width_secs = stof(argv[4]);
+			break;
+		default: cout << "Too many parameters. Check what you're entering." << endl;
+			exit(0);
+		}
+	}
+	catch (exception &exc)
+	{
+		cerr << "Invalid arguments passed. Please use the correct formatting for running the program." << endl;
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     // open the input wave file
@@ -54,52 +83,85 @@ int main(int argc, char* argv[])
     }
     phAudioFile->getFileSpec(stFileSpec);
 
+	sOutputFilePath = sInputFilePath + "output.txt";
+	sInput2TxtPath = sInputFilePath + "input.txt";
+
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
-    hOutputFile.open (sOutputFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open())
+    outfile.open (sOutputFilePath.c_str(), std::ios::out);
+    if (!outfile.is_open())
     {
         cout << "Text file open error!";
         return -1;
     }
+	//REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE THIS AFTER MATLAB CHECK IS DONE
+	infile.open(sInput2TxtPath.c_str(), std::ios::out);
+	if (!infile.is_open())
+	{
+		cout << "Text file open error!";
+		return -1;
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
-    ppfAudioData            = new float* [stFileSpec.iNumChannels];
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        ppfAudioData[i] = new float [kBlockSize];
+	ppfInputAudioData = new float*[stFileSpec.iNumChannels];
+	ppfOutputAudioData = new float*[stFileSpec.iNumChannels];
 
+	for (int i = 0; i < stFileSpec.iNumChannels; i++)
+	{
+		ppfInputAudioData[i] = new float[kBlockSize];
+		ppfOutputAudioData[i] = new float[kBlockSize];
+	}
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
-    // get audio data and write it to the output file
-    while (!phAudioFile->isEof())
-    {
-        long long iNumFrames = kBlockSize;
-        phAudioFile->readData(ppfAudioData, iNumFrames);
+	// do processing
 
-        for (int i = 0; i < iNumFrames; i++)
-        {
-            for (int c = 0; c < stFileSpec.iNumChannels; c++)
-            {
-                hOutputFile << ppfAudioData[c][i] << "\t";
-            }
-            hOutputFile << endl;
-        }
-    }
+	error_check = Vibrato::create(vibrato, max_delay_width_secs, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+	if (error_check == kUnknownError)
+		cerr << "Runtime error. Memory issues." << endl;
+	
+	error_check = vibrato->init(mod_freq, delay_width_secs, mod_amp_secs);
+	if (error_check == kFunctionInvalidArgsError)
+		cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
+	
+	cout << "Processing....." << endl;
+	while (!phAudioFile->isEof())
+	{
+		long long iNumFrames = kBlockSize;
+		phAudioFile->readData(ppfInputAudioData, iNumFrames);
+		vibrato->process(ppfInputAudioData, ppfOutputAudioData, iNumFrames);
+		for (int i = 0; i < iNumFrames; i++)
+		{
+			for (int j = 0; j < stFileSpec.iNumChannels; j++)
+			{
+				outfile << ppfOutputAudioData[j][i] << " ";
+				infile << ppfInputAudioData[j][i] << " ";
+			}
+			outfile << endl;
+			infile << endl;
+		}
+	}
 
-    cout << "reading/writing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
+    cout << "Processing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
 
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
-    hOutputFile.close();
+	Vibrato::destroy(vibrato);
+    outfile.close();
+	infile.close();
 
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        delete [] ppfAudioData[i];
-    delete [] ppfAudioData;
-    ppfAudioData = 0;
+	for (int i = 0; i < stFileSpec.iNumChannels; i++)
+	{
+		delete[] ppfInputAudioData[i];
+		delete[] ppfOutputAudioData[i];
+	}
+    delete [] ppfInputAudioData;
+	delete[] ppfOutputAudioData;
+    ppfInputAudioData = 0;
+	ppfOutputAudioData = 0;
 
-    return 0;
+    return 1;
     
 }
 
