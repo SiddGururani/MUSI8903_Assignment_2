@@ -141,7 +141,7 @@ Error_t Vibrato::reset ()
 
 Error_t Vibrato::convertTimeToSamples(float paramValue, int& param)
 {
-    param = paramValue * _sample_rate;
+    param = round(paramValue * _sample_rate);
     return kNoError;
 }
 
@@ -251,7 +251,7 @@ Error_t Vibrato::process (float **input_buffer, float **output_buffer, int numbe
             tap  = 1 + _delay_width + _mod_amp * _sin_osc->getOscOutput(time);
             tap = _ring_delay_line[channel_id]->getWriteIdx() - tap - _ring_delay_line[channel_id]->getReadIdx();
             output_buffer[channel_id][data_id] = _ring_delay_line[channel_id]->get(tap);
-            //cout << input_buffer[channel_id][data_id] << " " << output_buffer[channel_id][data_id]<< endl;
+            //cout << output_buffer[channel_id][data_id]<< " " << tap <<endl;
         }
         _num_samples_processed++;
     }

@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 							mod_freq				= 0.F,
 							mod_amp_secs			= 0.F,
 							delay_width_secs		= 0.F,
-							max_delay_width_secs	= 0.F;
+							max_delay_width_secs	= 3.F;
 
     CAudioFileIf            *phAudioFile			= 0;
 	Vibrato					*vibrato				= 0;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     // allocate memory
 	ppfInputAudioData = new float*[stFileSpec.iNumChannels];
 	ppfOutputAudioData = new float*[stFileSpec.iNumChannels];
-
+    
 	for (int i = 0; i < stFileSpec.iNumChannels; i++)
 	{
 		ppfInputAudioData[i] = new float[kBlockSize];
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 	error_check = vibrato->init(mod_freq, delay_width_secs, mod_amp_secs);
 	if (error_check == kFunctionInvalidArgsError)
 		cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
-	
+    
 	cout << "Processing....." << endl;
 	while (!phAudioFile->isEof())
 	{
@@ -144,6 +144,8 @@ int main(int argc, char* argv[])
 
     cout << "Processing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
 
+    
+    
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
@@ -160,9 +162,8 @@ int main(int argc, char* argv[])
 	delete[] ppfOutputAudioData;
     ppfInputAudioData = 0;
 	ppfOutputAudioData = 0;
-
-    return 1;
     
+    return 1;
 }
 
 

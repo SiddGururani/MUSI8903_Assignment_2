@@ -1,5 +1,5 @@
 set (APP MUSI8903Exec)
-
+set (VibratoLIB Vibrato)
 set (AudioLIB AudioFileIO)
 ## get all source files (note: this is considered bad style, one could also add file names individually)
 file(GLOB ${APP}_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}/src/${APP} *.c;*.cpp;*.txt)
@@ -12,7 +12,7 @@ add_inc_directories ()
 add_executable(${APP} ${${APP}_SOURCES} ${${APP}_HEADERS})
 
 # link the libraries
-target_link_libraries(${APP} ${LIB} ${TestLIB} ${NmfLIB} ${AudioLIB} ${SndLIB} ${OS_LIBS})
+target_link_libraries(${APP} ${LIB} ${TestLIB} ${NmfLIB} ${AudioLIB} ${SndLIB} ${OS_LIBS} ${VibratoLIB})
 
 
 if (WITH_CPPCHECKTARGET)
