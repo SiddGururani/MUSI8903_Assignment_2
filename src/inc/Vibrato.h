@@ -49,14 +49,14 @@ public:
     Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
     
 private:
-    Vibrato (float max_delay_width_secs, int num_channels, long int sample_rate);
+    Vibrato (int num_channels, long int sample_rate);
     virtual ~Vibrato ();
     
     CRingBuffer<float>** _ring_delay_line;
     LFO* _sin_osc;
     float _mod_freq;
     int _delay_width;
-    int _max_delay_width;
+    const float _max_delay_width_secs = 2.0F;
     int _mod_amp;
     long int _sample_rate;
     int _num_channels;

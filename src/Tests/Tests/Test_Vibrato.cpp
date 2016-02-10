@@ -106,9 +106,9 @@ SUITE(Vibrato_Test)
 
 		for (int i = 0; i < numChannels; i++)
 		{
-			for (int j = static_cast<int>(delay_width*sampleRate); j < dataLength; j++)
+			for (int j = static_cast<int>(round(delay_width*sampleRate)); j < dataLength; j++)
 			{
-				CHECK_CLOSE(inputData[i][j- static_cast<int>(delay_width*sampleRate)], outputData[i][j], 1e-3F);
+				CHECK_CLOSE(inputData[i][j- static_cast<int>(round((delay_width*sampleRate)))], outputData[i][j], 1e-3F);
 			}
 		}
 	}
@@ -129,7 +129,7 @@ SUITE(Vibrato_Test)
 
 		for (int i=0; i < numChannels; i++)
 		{
-            for (int j = static_cast<int>((delay_width + mod_amp)*sampleRate); j < dataLength; j++) {
+            for (int j = static_cast<int>(round(((delay_width + mod_amp)*sampleRate))); j < dataLength; j++) {
                 CHECK_EQUAL(dc_value, outputData[i][j]);
             }
 		}
@@ -197,7 +197,7 @@ SUITE(Vibrato_Test)
 
 		for (int i = 0; i < numChannels; i++)
 		{
-			for (int j = static_cast<int>((delay_width + mod_amp)*sampleRate); j < dataLength; j++) {
+			for (int j = static_cast<int>(round(((delay_width + mod_amp)*sampleRate))); j < dataLength; j++) {
 				CHECK_EQUAL(0, outputData[i][j]);
 			}
 		}
@@ -216,9 +216,9 @@ SUITE(Vibrato_Test)
 
 		for (int i = 0; i < numChannels; i++)
 		{
-			for (int j = static_cast<int>(delay_width*sampleRate); j < dataLength; j++)
+			for (int j = static_cast<int>(round(delay_width*sampleRate)); j < dataLength; j++)
 			{
-				CHECK_CLOSE(inputData[i][j - static_cast<int>(delay_width*sampleRate)], outputData[i][j], 1e-3F);
+				CHECK_CLOSE(inputData[i][j - static_cast<int>(round(delay_width*sampleRate))], outputData[i][j], 1e-3F);
 			}
 		}
 	}

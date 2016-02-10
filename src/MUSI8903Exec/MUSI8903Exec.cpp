@@ -30,13 +30,13 @@ int main(int argc, char* argv[])
 							mod_freq				= 0.F,
 							mod_amp_secs			= 0.F,
 							delay_width_secs		= 0.1F;
-							//max_delay_width_secs	= 3.F;
 
     CAudioFileIf            *phAudioFile			= 0;
 	Vibrato					*vibrato				= 0;
 	Error_t					error_check;
     std::ofstream           infile, outfile;
     CAudioFileIf::FileSpec_t stFileSpec;
+    outfile.precision(15);
 
     showClInfo ();
 
@@ -58,12 +58,6 @@ int main(int argc, char* argv[])
 			mod_freq = stof(argv[2]);
 			mod_amp_secs = stof(argv[3]);
 			break;
-		/*
-		case 5: sInputFilePath = argv[1];
-			mod_freq = stof(argv[2]);
-			mod_amp_secs = stof(argv[3]);
-			delay_width_secs = stof(argv[4]);
-			break;*/
 		default: cout << "Too many parameters. Check what you're entering." << endl;
 			exit(0);
 		}
@@ -116,16 +110,44 @@ int main(int argc, char* argv[])
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
 	// do processing
-
+    
+    /*
+    float** tempInp = new float*[1];
+    tempInp[0] = new float[10000];
+    for (int i = 0; i < 10000; i++) {
+        tempInp[0][i] = 0;
+    }
+    tempInp[0][0] = 1;
+    float** tempOut = new float*[1];
+    tempOut[0] = new float[10000];
+    */
+    
 	error_check = Vibrato::create(vibrato, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
-	if (error_check == kUnknownError)
+    if (error_check == kUnknownError) {
 		cerr << "Runtime error. Memory issues." << endl;
+        return -1;
+    }
 	
-	/*Here delay_width_secs is selected by the developer to set the maximum delay length that he wants the 
+	/*Here delay_width_secs is selected by the developer to set the maximum delay length that he wants the
 	user to be able to choose for the vibrato modulation amplitude.*/
 	error_check = vibrato->init(mod_freq, delay_width_secs, mod_amp_secs);
-	if (error_check == kFunctionInvalidArgsError)
+	if (error_check == kFunctionInvalidArgsError) {
 		cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
+        return -1;
+    }
+    /*
+    vibrato->process(tempInp, tempOut, 10000);
+    for (int i = 0; i < 10000; i++) {
+        
+        for (int j = 0; j < 1; j++)
+        {
+            outfile << tempOut[j][i] << " ";
+            infile << tempInp[j][i] << " ";
+        }
+        outfile << endl;
+        infile << endl;
+    }
+    */
     
 	cout << "Processing....." << endl;
 	while (!phAudioFile->isEof())
@@ -144,10 +166,8 @@ int main(int argc, char* argv[])
 			infile << endl;
 		}
 	}
-
-    cout << "Processing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
-
     
+    cout << "Processing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
     
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
@@ -166,6 +186,13 @@ int main(int argc, char* argv[])
     ppfInputAudioData = 0;
 	ppfOutputAudioData = 0;
     
+    /*
+    delete[] tempInp[0];
+    delete[] tempInp;
+    delete[] tempOut[0];
+    delete[] tempOut;
+    */
+     
     return 1;
 }
 

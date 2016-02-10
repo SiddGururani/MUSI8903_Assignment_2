@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <cmath>
 
-#define PI 3.14159265359
+#define PI 3.141592653589793
 
 using namespace std;
 
@@ -32,9 +32,9 @@ public:
     /* returns the LFO output at a given time in seconds
     float time: time in seconds
     */
-    float getOscOutput(float time)
+    double getOscOutput(double time)
     {
-        return static_cast<float>(sin(2*PI*_mod_freq*time));
+        return sin(2*PI*_mod_freq*time);
     }
     
     void setOscFreq(float mod_freq)
