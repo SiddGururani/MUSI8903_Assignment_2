@@ -146,7 +146,7 @@ Error_t Vibrato::reset ()
 
 Error_t Vibrato::convertTimeToSamples(float paramValue, int& param)
 {
-    param = round(paramValue * _sample_rate);
+    param = static_cast<int>(round(paramValue * _sample_rate));
     return kNoError;
 }
 /*

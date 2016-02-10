@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 							**ppfOutputAudioData	= 0,
 							mod_freq				= 0.F,
 							mod_amp_secs			= 0.F,
-							delay_width_secs		= 0.1;
+							delay_width_secs		= 0.1F;
 							//max_delay_width_secs	= 3.F;
 
     CAudioFileIf            *phAudioFile			= 0;

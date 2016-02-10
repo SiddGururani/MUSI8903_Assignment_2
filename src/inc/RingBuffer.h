@@ -115,9 +115,9 @@ public:
     */
     T get(double dIndex) const
     {
-        int integralPart = std::floor(dIndex);
+        int integralPart = static_cast<int>(std::floor(dIndex));
         double fractionalPart = dIndex - integralPart;
-        return get(integralPart)*(1-fractionalPart) + get(integralPart+1)*fractionalPart;
+        return static_cast<T>(get(integralPart)*(1-fractionalPart) + get(integralPart+1)*fractionalPart);
     }
     
     /*! return the values starting at the current read index

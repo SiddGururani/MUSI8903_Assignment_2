@@ -34,7 +34,7 @@ public:
     */
     float getOscOutput(float time)
     {
-        return sin(2*PI*_mod_freq*time);
+        return static_cast<float>(sin(2*PI*_mod_freq*time));
     }
     
     void setOscFreq(float mod_freq)
