@@ -67,8 +67,10 @@ const char*  Vibrato::getBuildDate ()
     return kVibratoBuildDate;
 }
 
-Error_t Vibrato::create (Vibrato*& pVibrato, float max_delay_width_sec, long int sample_rate, int num_channels)
+Error_t Vibrato::create (Vibrato*& pVibrato, long int sample_rate, int num_channels)
 {
+	// Hard limit on the maximum delay buffer size set to 2 seconds.
+	float max_delay_width_sec = 2.0F;
     pVibrato = new Vibrato (max_delay_width_sec, num_channels, sample_rate);
     
     if (!pVibrato)
@@ -106,6 +108,9 @@ Error_t Vibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs
     _sin_osc->setOscFreq(mod_freq);
     
     // check parameter validity
+	if (_delay_width * 2 > _max_delay_width)
+		return kFunctionInvalidArgsError;
+
     if (_mod_amp < 0 || _delay_width < 0)
         return kFunctionInvalidArgsError;
     
@@ -144,7 +149,7 @@ Error_t Vibrato::convertTimeToSamples(float paramValue, int& param)
     param = round(paramValue * _sample_rate);
     return kNoError;
 }
-
+/*
 Error_t Vibrato::setDelayWidth(float delay_width_secs)
 {
     int temp = 0;
@@ -175,6 +180,7 @@ Error_t Vibrato::setDelayWidth(float delay_width_secs)
     _delay_width = temp;
     return kNoError;
 }
+*/
 
 Error_t Vibrato::setModAmp(float delay_width_secs)
 {

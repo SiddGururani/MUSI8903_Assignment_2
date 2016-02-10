@@ -21,7 +21,7 @@ SUITE(Vibrato_Test)
 			inputData(0),
 			outputData(0),
 			dataLength(35131),
-			maxDelayLength(3.F),
+			//maxDelayLength(3.F),
 			blockLength(171),
 			numChannels(3),
 			sampleRate(8000),
@@ -30,7 +30,7 @@ SUITE(Vibrato_Test)
 			mod_amp(.002F)
 			
 		{
-			Vibrato::create(pVibrato, maxDelayLength, sampleRate, numChannels);
+			Vibrato::create(pVibrato, sampleRate, numChannels);
 			
 			inputData = new float*[numChannels];
 			outputData = new float*[numChannels];
@@ -84,7 +84,7 @@ SUITE(Vibrato_Test)
                 **inputTmp,
                 **outputTmp;
 		int     dataLength;
-		float   maxDelayLength;
+		//float   maxDelayLength;
 		int     blockLength;
 		int     numChannels;
 		float   sampleRate;

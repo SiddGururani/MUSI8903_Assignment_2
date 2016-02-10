@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 							**ppfOutputAudioData	= 0,
 							mod_freq				= 0.F,
 							mod_amp_secs			= 0.F,
-							delay_width_secs		= 0.F,
-							max_delay_width_secs	= 3.F;
+							delay_width_secs		= 0.1;
+							//max_delay_width_secs	= 3.F;
 
     CAudioFileIf            *phAudioFile			= 0;
 	Vibrato					*vibrato				= 0;
@@ -58,11 +58,12 @@ int main(int argc, char* argv[])
 			mod_freq = stof(argv[2]);
 			mod_amp_secs = stof(argv[3]);
 			break;
+		/*
 		case 5: sInputFilePath = argv[1];
 			mod_freq = stof(argv[2]);
 			mod_amp_secs = stof(argv[3]);
 			delay_width_secs = stof(argv[4]);
-			break;
+			break;*/
 		default: cout << "Too many parameters. Check what you're entering." << endl;
 			exit(0);
 		}
@@ -116,10 +117,12 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
 	// do processing
 
-	error_check = Vibrato::create(vibrato, max_delay_width_secs, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+	error_check = Vibrato::create(vibrato, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
 	if (error_check == kUnknownError)
 		cerr << "Runtime error. Memory issues." << endl;
 	
+	/*Here delay_width_secs is selected by the developer to set the maximum delay length that he wants the 
+	user to be able to choose for the vibrato modulation amplitude.*/
 	error_check = vibrato->init(mod_freq, delay_width_secs, mod_amp_secs);
 	if (error_check == kFunctionInvalidArgsError)
 		cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
@@ -170,7 +173,7 @@ int main(int argc, char* argv[])
 void     showClInfo()
 {
     cout << "GTCMT MUSI8903" << endl;
-    cout << "(c) 2016 by Alexander Lerch" << endl;
+    cout << "(c) 2016 by Siddharth and Ashis" << endl;
     cout  << endl;
 
     return;

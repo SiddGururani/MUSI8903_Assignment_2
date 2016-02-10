@@ -27,7 +27,7 @@ public:
     
     static const int  getVersion (const Version_t eVersionIdx);
     static const char* getBuildDate ();
-    static Error_t create (Vibrato*& pCKortIf, float max_delay_width_sec, long int sample_rate, int num_channels);
+    static Error_t create (Vibrato*& pCKortIf, long int sample_rate, int num_channels);
     static Error_t destroy (Vibrato*& pCKortIf);
     
     //initialisation and reset functions
@@ -36,7 +36,7 @@ public:
     
     
     //set parameter functions
-    Error_t setDelayWidth(float delay_width_secs);
+    //Error_t setDelayWidth(float delay_width_secs);
     Error_t setModAmp(float mod_amp_secs);
     Error_t setModFreq(float mod_freq);
     
