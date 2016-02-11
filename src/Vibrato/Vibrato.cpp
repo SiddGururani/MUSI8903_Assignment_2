@@ -69,8 +69,6 @@ const char*  Vibrato::getBuildDate ()
 
 Error_t Vibrato::create (Vibrato*& pVibrato, long int sample_rate, int num_channels)
 {
-	// Hard limit on the maximum delay buffer size set to 2 seconds.
-	float max_delay_width_sec = 2.0F;
     pVibrato = new Vibrato (num_channels, sample_rate);
     
     if (!pVibrato)

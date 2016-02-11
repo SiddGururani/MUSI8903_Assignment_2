@@ -153,7 +153,7 @@ SUITE(Vibrato_Test)
 			outputData2[i] = new float[dataLength];
 		}
 
-		//Processing again with new block Length = 366;
+		//Processing again with new arbitrary block Length = 366;
 		blockLength = 366;
 		int numFramesRemaining = dataLength;
 		while (numFramesRemaining > 0)

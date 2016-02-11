@@ -89,13 +89,14 @@ int main(int argc, char* argv[])
         cout << "Text file open error!";
         return -1;
     }
-	//REMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOVE THIS AFTER MATLAB CHECK IS DONE
-	infile.open(sInput2TxtPath.c_str(), std::ios::out);
+
+	// write input file contents to text file
+	/*infile.open(sInput2TxtPath.c_str(), std::ios::out);
 	if (!infile.is_open())
 	{
 		cout << "Text file open error!";
 		return -1;
-	}
+	}*/
 
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
@@ -111,43 +112,19 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
 	// do processing
     
-    /*
-    float** tempInp = new float*[1];
-    tempInp[0] = new float[10000];
-    for (int i = 0; i < 10000; i++) {
-        tempInp[0][i] = 0;
-    }
-    tempInp[0][0] = 1;
-    float** tempOut = new float*[1];
-    tempOut[0] = new float[10000];
-    */
-    
 	error_check = Vibrato::create(vibrato, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
     if (error_check == kUnknownError) {
 		cerr << "Runtime error. Memory issues." << endl;
         return -1;
     }
 	
-	/*Here delay_width_secs is selected by the developer to set the maximum delay length that he wants the
-	user to be able to choose for the vibrato modulation amplitude.*/
+	// Here delay_width_secs is selected by the developer to set the maximum delay length that he wants the
+	// user to be able to choose for the vibrato modulation amplitude.
 	error_check = vibrato->init(mod_freq, delay_width_secs, mod_amp_secs);
 	if (error_check == kFunctionInvalidArgsError) {
 		cerr << "Invalid parameters: One or more parameters is out of bounds. Please check your parameters." << endl;
         return -1;
     }
-    /*
-    vibrato->process(tempInp, tempOut, 10000);
-    for (int i = 0; i < 10000; i++) {
-        
-        for (int j = 0; j < 1; j++)
-        {
-            outfile << tempOut[j][i] << " ";
-            infile << tempInp[j][i] << " ";
-        }
-        outfile << endl;
-        infile << endl;
-    }
-    */
     
 	cout << "Processing....." << endl;
 	while (!phAudioFile->isEof())
@@ -185,13 +162,6 @@ int main(int argc, char* argv[])
 	delete[] ppfOutputAudioData;
     ppfInputAudioData = 0;
 	ppfOutputAudioData = 0;
-    
-    /*
-    delete[] tempInp[0];
-    delete[] tempInp;
-    delete[] tempOut[0];
-    delete[] tempOut;
-    */
      
     return 1;
 }
