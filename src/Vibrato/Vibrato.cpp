@@ -22,7 +22,7 @@ using namespace std;
 static const char*  kVibratoBuildDate             = __DATE__;
 
 
-Vibrato::Vibrato (int num_channels, long int sample_rate)
+Vibrato::Vibrato(int num_channels, long int sample_rate):_max_delay_width_secs(2.0F)
 {
     _sample_rate = sample_rate;
     _num_channels = num_channels;
@@ -109,7 +109,7 @@ Error_t Vibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs
 	if (_delay_width * 2 > _max_delay_width_secs*_sample_rate)
 		return kFunctionInvalidArgsError;
 
-    if (_mod_amp < 0 || _delay_width < 0)
+    if (_mod_amp < 0 || _delay_width < 0 || _mod_freq < 0)
         return kFunctionInvalidArgsError;
     
     if (_mod_amp > _delay_width)

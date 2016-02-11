@@ -56,7 +56,7 @@ private:
     virtual ~Vibrato ();
     
 	//Limit for the maximum ring buffer size that may be used by the developer.
-	const float _max_delay_width_secs = 2.0F;
+	const float _max_delay_width_secs;
 
     CRingBuffer<float>** _ring_delay_line;
     LFO* _sin_osc;
